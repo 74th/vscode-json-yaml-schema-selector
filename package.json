@@ -1,8 +1,9 @@
 {
   "name": "json-yaml-schema-selector",
   "displayName": "json yaml schema selector",
-  "description": "select JSON/YAML schema easier",
-  "version": "0.0.1",
+  "description": "select JSON/YAML schema quickly",
+  "version": "0.1.0",
+  "icon": "./icon.png",
   "engines": {
     "vscode": "^1.45.0"
   },
@@ -13,13 +14,58 @@
     "onCommand:json-yaml-schema-selector.selectSchemaFromFileMatch"
   ],
   "main": "./out/extension.js",
+  "extensionDependencies": [
+    "redhat.vscode-yaml"
+  ],
   "contributes": {
     "commands": [
       {
         "command": "json-yaml-schema-selector.selectSchemaFromFileMatch",
         "title": "Select JSON/YAML Schema from file match"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "JsonYamlSchemaSelector",
+      "properties": {
+        "json-yaml-schema-selector.additionalSchemas": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "fileMatch": {
+                "type": "array",
+                "items": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "versions": {
+                "type": "object",
+                "patternProperties": {
+                  ".*": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "default": [],
+          "description": "schema url list"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

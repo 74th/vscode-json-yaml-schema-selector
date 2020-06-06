@@ -1,65 +1,57 @@
-# json-yaml-schema-selector README
+# JSON & YAML Schema elector
 
-This is the README for your extension "json-yaml-schema-selector". After writing up a brief description, we recommend including the following sections.
+Setting a schemas to your JSON and YAML file quickly.
 
-## Features
+# How to use
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+open JSON or YAML file
 
-For example if there is an image subfolder under your extension project workspace:
+![open JSON or YAML file](./docs/open-file.png)
 
-\!\[feature X\]\(images/feature-x.png\)
+run command "Select JSON/YAML Schema from file match"
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+!["Select JSON/YAML Schema from file match"](./docs/run-command.png)
 
-## Requirements
+select json schemas
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+![select json schemas](./docs/select-schema.png)
 
-## Extension Settings
+use schema
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+![use schema](./docs/use-schema.png)
 
-For example:
+this will set the schema to settings.json
 
-This extension contributes the following settings:
+![settings.json](./docs/settings.png)
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+# using schemas
 
-## Known Issues
+This uses [JSON Schema Store](https://www.schemastore.org/json/).
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## how to add schemas
 
-## Release Notes
+Please add your settings.
 
-Users appreciate release notes as you update your extension.
+```json
+{
+  "json-yaml-schema-selector.additionalSchemas": [
+    // url
+    "https://raw.githubusercontent.com/docker/compose/master/compose/config/config_schema_v3.8.json",
+    // object
+    {
+      "name": "docker-compose",
+      "description": "docker-compose 3.8",
+      "url": "https://raw.githubusercontent.com/docker/compose/master/compose/config/config_schema_v3.8.json",
+      "fileMatch": ["docker-compose.yaml"]
+    }
+  ]
+}
+```
 
-### 1.0.0
+# License
 
-Initial release of ...
+MIT
 
-### 1.0.1
+# thanks
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Icon used from [freeicons.io](https://freeicons.io)
