@@ -3,11 +3,25 @@
   "displayName": "JSON YAML Schema Selector",
   "description": "select JSON/YAML schema quickly",
   "publisher": "74th",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "icon": "icon.png",
+  "license": "MIT",
+  "galleryBanner": {
+    "color": "#101010",
+    "theme": "dark"
+  },
+  "author": {
+    "name": "74th",
+    "url": "https://github.com/74th"
+  },
   "homepage": "https://github.com/74th/vscode-json-yaml-schema-selector",
-  "repository": "https://github.com/74th/vscode-json-yaml-schema-selector",
-  "bugs": "https://github.com/74th/vscode-json-yaml-schema-selector/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/74th/vscode-json-yaml-schema-selector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/74th/vscode-json-yaml-schema-selector/issues"
+  },
   "engines": {
     "vscode": "^1.45.0"
   },
