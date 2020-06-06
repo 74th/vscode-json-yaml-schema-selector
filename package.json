@@ -3,7 +3,7 @@
   "displayName": "JSON YAML Schema Selector",
   "description": "select JSON/YAML schema quickly",
   "publisher": "74th",
-  "version": "0.9.2",
+  "version": "1.0.0",
   "icon": "icon.png",
   "license": "MIT",
   "galleryBanner": {
