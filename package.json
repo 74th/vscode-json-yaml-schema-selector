@@ -1,13 +1,14 @@
 {
   "name": "json-yaml-schema-selector",
-  "displayName": "json yaml schema selector",
+  "displayName": "JSON YAML Schema Selector",
   "description": "select JSON/YAML schema quickly",
   "version": "0.1.0",
-  "icon": "./icon.png",
+  "icon": "https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/icon.png",
   "engines": {
     "vscode": "^1.45.0"
   },
   "categories": [
+    "Linters",
     "Other"
   ],
   "activationEvents": [
