@@ -6,23 +6,23 @@ Setting a schemas to your JSON and YAML file quickly.
 
 open JSON or YAML file
 
-![open JSON or YAML file](./docs/open-file.png)
+![open JSON or YAML file](https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/docs/open-file.png)
 
 run command "Select JSON/YAML Schema from file match"
 
-!["Select JSON/YAML Schema from file match"](./docs/run-command.png)
+!["Select JSON/YAML Schema from file match"](https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/docs/run-command.png)
 
 select json schemas
 
-![select json schemas](./docs/select-schema.png)
+![select json schemas](https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/docs/select-schema.png)
 
 use schema
 
-![use schema](./docs/use-schema.png)
+![use schema](https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/docs/use-schema.png)
 
 this will set the schema to settings.json
 
-![settings.json](./docs/settings.png)
+![settings.json](https://raw.githubusercontent.com/74th/vscode-json-yaml-schema-selector/master/docs/settings.png)
 
 # using schemas
 
