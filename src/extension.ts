@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { QuickPickItem } from 'vscode';
 
-import { SchemaStore, Schema } from './schema/schema';
+import { SchemaStore, Schema, SchemaCatalog } from './schema/schema';
 
 interface JSONSchemaSetting {
     fileMatch: string[]
@@ -76,16 +76,19 @@ function detectJSONorYAML(scheme: Schema): string | undefined {
     return undefined;
 }
 
-export function activate(context: vscode.ExtensionContext) {
+let schemaStore = initSchemaStore()
 
-    console.log('Congratulations, your extension "json-yaml-schema-selector" is now active!');
-
-    let schemaStore = new SchemaStore({
+function initSchemaStore(): SchemaStore {
+    return new SchemaStore({
         repositoryURLs: [{
             name: "chemastore.ong",
             url: "http://schemastore.org/api/json/catalog.json",
         }]
     });
+}
+
+
+export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('json-yaml-schema-selector.selectSchemaFromFileMatch', async () => {
         await schemaStore.fetchSchemas();
@@ -93,6 +96,31 @@ export function activate(context: vscode.ExtensionContext) {
         if (!vscode.window.activeTextEditor) {
             return;
         }
+
+        const userSchemas = vscode.workspace.getConfiguration("json-yaml-schema-selector").get("additionalSchemas") as (string | SchemaCatalog)[];
+        userSchemas.forEach(schema => {
+            if (typeof (schema) == "string") {
+                schemaStore.addSchemas({
+                    catalog: {
+                        name: schema,
+                        description: "user-setting",
+                        url: schema,
+                    },
+                    org: "user-setting"
+                })
+            } else {
+                if (!schema.description) {
+                    schema.description = schema.name
+                }
+                if (!schema.description) {
+                    schema.description = schema.name
+                }
+                schemaStore.addSchemas({
+                    catalog: schema,
+                    org: "user-setting"
+                })
+            }
+        })
 
         const filePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
         const filePathMatchScemas = schemaStore.selectSchemasWithFileMatch(filePath);
@@ -168,7 +196,11 @@ export function activate(context: vscode.ExtensionContext) {
             config.update("schemas", settings, false);
         }
     });
+    context.subscriptions.push(disposable);
 
+    disposable = vscode.workspace.onDidChangeConfiguration(() => {
+        schemaStore = initSchemaStore();
+    });
     context.subscriptions.push(disposable);
 }
 

@@ -1,6 +1,5 @@
 import * as request from "request-promise";
 import { Schema } from "inspector";
-import { match } from "assert";
 import * as minimatch from "minimatch";
 
 export interface Config {
@@ -86,4 +85,8 @@ export class SchemaStore {
     getAllSchemas = (): Schema[] => {
         return this.schemas;
     };
+
+    addSchemas = (schema: Schema) => {
+        this.schemas.push(schema)
+    }
 }
