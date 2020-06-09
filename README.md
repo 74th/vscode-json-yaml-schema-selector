@@ -52,6 +52,16 @@ Please add your settings.
 
 MIT
 
+# Change Log
+
+## 1.1.0
+
+- supporting jsonc as json
+
+## 1.0.0
+
+- first version
+
 # thanks
 
 Icon used from [freeicons.io](https://freeicons.io)
