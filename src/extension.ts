@@ -10,97 +10,50 @@ interface JSONSchemaSetting {
 type JSONSchemaSettings = JSONSchemaSetting[];
 type YAMLSchemaSettings = { [label: string]: string[] };
 
-function createSchemaSelectItems(schemas: Schema[]): QuickPickItem[] {
-    const items: QuickPickItem[] = [];
-    for (let schema of schemas) {
-        items.push({
-            label: schema.catalog.name,
-            description: `${schema.catalog.description} (${schema.org})`,
+class UserMessageError implements Error {
+
+    message: string
+    name: string
+
+    constructor(message: string) {
+        this.message = message;
+        this.name = "UserMessageError";
+    }
+}
+
+class InterruptionError implements Error {
+
+    message: string
+    name: string
+
+    constructor(message: string) {
+        this.message = message;
+        this.name = "UserMessageError";
+    }
+}
+
+class Extension {
+    schemaStore: SchemaStore
+
+    constructor() {
+        this.schemaStore = this.initSchemaStore();
+        this.addUserSchemas();
+    }
+
+    private initSchemaStore = (): SchemaStore => {
+        return new SchemaStore({
+            repositoryURLs: [{
+                name: "chemastore.ong",
+                url: "http://schemastore.org/api/json/catalog.json",
+            }]
         });
     }
-    return items;
-}
 
-function createVersionSelectItems(schema: Schema): QuickPickItem[] {
-    const items: QuickPickItem[] = [{ label: "latest" }];
-    for (let key of Object.keys(schema.catalog.versions!)) {
-        items.push({
-            label: key,
-        });
-    }
-    return items;
-}
-
-function matchSelectedItemToSchema(schemas: Schema[], items: QuickPickItem[], selected: QuickPickItem): Schema {
-    for (let i = 0; i < items.length; i++) {
-        if (selected === items[i]) {
-            return schemas[i];
-        }
-    }
-    throw new Error("wrong selection");
-}
-
-function detectJSONorYAML(scheme: Schema): string | undefined {
-    if (vscode.window.activeTextEditor!.document.languageId === "json" || vscode.window.activeTextEditor!.document.languageId === "jsonc") {
-        return "json";
-    }
-    if (vscode.window.activeTextEditor!.document.languageId === "yaml") {
-        return "yaml";
-    }
-    const fileName = vscode.window.activeTextEditor!.document.fileName.toLowerCase();
-    if (fileName) {
-        if (fileName.endsWith(".yaml") || fileName.endsWith(".yml")) {
-            return "yaml";
-        }
-        if (fileName.endsWith(".json") || fileName.endsWith(".jsonc")) {
-            return "json";
-        }
-        if (fileName.includes(".yaml") || fileName.includes(".yml")) {
-            return "yaml";
-        }
-        if (fileName.includes(".json") || fileName.includes(".jsonc")) {
-            return "json";
-        }
-    }
-    if (scheme.catalog.fileMatch) {
-        for (let match of scheme.catalog.fileMatch) {
-            if (match.includes(".yaml") || match.includes(".yml")) {
-                return "yaml";
-            }
-            if (match.includes(".json") || match.includes(".jsonc")) {
-                return "json";
-            }
-        }
-    }
-
-    return undefined;
-}
-
-let schemaStore = initSchemaStore()
-
-function initSchemaStore(): SchemaStore {
-    return new SchemaStore({
-        repositoryURLs: [{
-            name: "chemastore.ong",
-            url: "http://schemastore.org/api/json/catalog.json",
-        }]
-    });
-}
-
-
-export function activate(context: vscode.ExtensionContext) {
-
-    let disposable = vscode.commands.registerCommand('json-yaml-schema-selector.selectSchemaFromFileMatch', async () => {
-        await schemaStore.fetchSchemas();
-
-        if (!vscode.window.activeTextEditor) {
-            return;
-        }
-
+    private addUserSchemas = () => {
         const userSchemas = vscode.workspace.getConfiguration("json-yaml-schema-selector").get("additionalSchemas") as (string | SchemaCatalog)[];
         userSchemas.forEach(schema => {
             if (typeof (schema) == "string") {
-                schemaStore.addSchemas({
+                this.schemaStore.addSchemas({
                     catalog: {
                         name: schema,
                         description: "user-setting",
@@ -115,15 +68,45 @@ export function activate(context: vscode.ExtensionContext) {
                 if (!schema.description) {
                     schema.description = schema.name
                 }
-                schemaStore.addSchemas({
+                this.schemaStore.addSchemas({
                     catalog: schema,
                     org: "user-setting"
                 })
             }
         })
+    }
 
-        const filePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
-        const filePathMatchScemas = schemaStore.selectSchemasWithFileMatch(filePath);
+    private fetchSchemas = async () => {
+        await this.schemaStore.fetchSchemas();
+    }
+
+    private getActiveEditorDocumentPath = (): string => {
+        return vscode.workspace.asRelativePath(vscode.window.activeTextEditor!.document.uri);
+    }
+
+    private selectSchema = async (filePath: string): Promise<Schema> => {
+
+        function createSchemaSelectItems(schemas: Schema[]): QuickPickItem[] {
+            const items: QuickPickItem[] = [];
+            for (let schema of schemas) {
+                items.push({
+                    label: schema.catalog.name,
+                    description: `${schema.catalog.description} (${schema.org})`,
+                });
+            }
+            return items;
+        }
+
+        function matchSelectedItemToSchema(schemas: Schema[], items: QuickPickItem[], selected: QuickPickItem): Schema {
+            for (let i = 0; i < items.length; i++) {
+                if (selected === items[i]) {
+                    return schemas[i];
+                }
+            }
+            throw new Error("wrong selection");
+        }
+
+        const filePathMatchScemas = this.schemaStore.selectSchemasWithFileMatch(filePath);
 
         let selectedSchema: Schema | null = null;
 
@@ -137,11 +120,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (!selectedSchema) {
-            const schemas = schemaStore.getAllSchemas();
+            const schemas = this.schemaStore.getAllSchemas();
             const items = createSchemaSelectItems(schemas);
             if (schemas.length === 0) {
-                vscode.window.showErrorMessage("cannot fetch any schemas");
-                return;
+                throw new UserMessageError("cannot fetch any schemas");
             }
             const selected = await vscode.window.showQuickPick(items, { canPickMany: false });
             if (selected) {
@@ -149,59 +131,152 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
         if (!selectedSchema) {
+            throw new InterruptionError("does not select schema");
+        }
+        return selectedSchema;
+    }
+
+    private selectSchemaURL = async (schema: Schema): Promise<string> => {
+
+        function createVersionSelectItems(schema: Schema): QuickPickItem[] {
+            const items: QuickPickItem[] = [{ label: "latest" }];
+            for (let key of Object.keys(schema.catalog.versions!)) {
+                items.push({
+                    label: key,
+                });
+            }
+            return items;
+        }
+
+        if (!schema.catalog.versions) {
+            return schema.catalog.url as string;
+        }
+        const items = createVersionSelectItems(schema);
+        const selected = await vscode.window.showQuickPick(items, { canPickMany: false });
+        if (!selected) {
+            throw new Error("does not select schema version");
+        }
+        if (selected.label === "latest") {
+            return schema.catalog.url as string;
+        }
+        return schema.catalog.versions[selected.label] as string;
+    }
+
+    private detectJSONorYAML = async (scheme: Schema): Promise<string> => {
+        if (vscode.window.activeTextEditor!.document.languageId === "json" || vscode.window.activeTextEditor!.document.languageId === "jsonc") {
+            return "json";
+        }
+        if (vscode.window.activeTextEditor!.document.languageId === "yaml") {
+            return "yaml";
+        }
+        const fileName = vscode.window.activeTextEditor!.document.fileName.toLowerCase();
+        if (fileName) {
+            if (fileName.endsWith(".yaml") || fileName.endsWith(".yml")) {
+                return "yaml";
+            }
+            if (fileName.endsWith(".json") || fileName.endsWith(".jsonc")) {
+                return "json";
+            }
+            if (fileName.includes(".yaml") || fileName.includes(".yml")) {
+                return "yaml";
+            }
+            if (fileName.includes(".json") || fileName.includes(".jsonc")) {
+                return "json";
+            }
+        }
+        if (scheme.catalog.fileMatch) {
+            for (let match of scheme.catalog.fileMatch) {
+                if (match.includes(".yaml") || match.includes(".yml")) {
+                    return "yaml";
+                }
+                if (match.includes(".json") || match.includes(".jsonc")) {
+                    return "json";
+                }
+            }
+        }
+
+        const selected = await vscode.window.showQuickPick(["json", "yaml"], { canPickMany: false });
+        if (selected) {
+            return selected
+        }
+        throw new InterruptionError("does not select json/yaml")
+    }
+
+    private insertJSONConfiguration = (filePath: string, schemaURL: string) => {
+        let config = vscode.workspace.getConfiguration("json");
+        let settings = config.get("schemas") as JSONSchemaSettings;
+        const update = { fileMatch: [filePath], url: schemaURL! };
+        if (settings) {
+            settings.push(update);
+        } else {
+            settings = [update];
+        }
+        config.update("schemas", settings, false);
+    }
+
+    private insertYAMLConfiguration = (filePath: string, schemaURL: string) => {
+        let config = vscode.workspace.getConfiguration("yaml");
+        let settings = config.get("schemas") as YAMLSchemaSettings;
+        if (!settings) {
+            settings = {};
+        }
+        if (!settings[schemaURL]) {
+            settings[schemaURL] = [];
+        }
+        settings[schemaURL].push(filePath);
+        config.update("schemas", settings, false);
+    }
+
+    public runSelectSchema = async () => {
+
+        if (!vscode.window.activeTextEditor) {
             return;
         }
 
-        let selectedSchemaURL: string | undefined;
-
-        if (selectedSchema.catalog.versions) {
-            const items = createVersionSelectItems(selectedSchema);
-            const selected = await vscode.window.showQuickPick(items, { canPickMany: false });
-            if (!selected) {
+        try {
+            await this.fetchSchemas();
+            const filePath = this.getActiveEditorDocumentPath()
+            const schema = await this.selectSchema(filePath);
+            const selectedSchemaURL = await this.selectSchemaURL(schema);
+            const detectedType = await this.detectJSONorYAML(schema);
+            if (detectedType === "json") {
+                this.insertJSONConfiguration(filePath, selectedSchemaURL);
+            } else if (detectedType === "yaml") {
+                this.insertYAMLConfiguration(filePath, selectedSchemaURL);
+            }
+        } catch (err) {
+            if (err instanceof UserMessageError) {
+                vscode.window.showErrorMessage(err.message);
                 return;
             }
-            if (selected.label === "latest") {
-                selectedSchemaURL = selectedSchema.catalog.url as string;
-            } else {
-                selectedSchemaURL = selectedSchema.catalog.versions[selected.label] as string;
+            if (err instanceof UserMessageError) {
+                return;
             }
-        } else {
-            selectedSchemaURL = selectedSchema.catalog.url as string;
+            throw err;
         }
 
-        let detectedType = detectJSONorYAML(selectedSchema);
-        if (!detectedType) {
-            detectedType = await vscode.window.showQuickPick(["json", "yaml"], { canPickMany: false });
-        }
-        if (detectedType === "json") {
-            let config = vscode.workspace.getConfiguration("json");
-            let settings = config.get("schemas") as JSONSchemaSettings;
-            const update = { fileMatch: [filePath], url: selectedSchemaURL! };
-            if (settings) {
-                settings.push(update);
-            } else {
-                settings = [update];
-            }
-            config.update("schemas", settings, false);
-        } else if (detectedType === "yaml") {
-            let config = vscode.workspace.getConfiguration("yaml");
-            let settings = config.get("schemas") as YAMLSchemaSettings;
-            if (!settings) {
-                settings = {};
-            }
-            if (!settings[selectedSchemaURL]) {
-                settings[selectedSchemaURL] = [];
-            }
-            settings[selectedSchemaURL].push(filePath);
-            config.update("schemas", settings, false);
-        }
-    });
-    context.subscriptions.push(disposable);
+    }
 
-    disposable = vscode.workspace.onDidChangeConfiguration(() => {
-        schemaStore = initSchemaStore();
-    });
-    context.subscriptions.push(disposable);
+}
+
+export function activate(ctx: vscode.ExtensionContext) {
+
+    let ext: Extension | null = null;
+
+    ctx.subscriptions.push(
+        vscode.commands.registerCommand('json-yaml-schema-selector.selectSchemaFromFileMatch', async () => {
+            if (!ext) {
+                ext = new Extension();
+            }
+            ext.runSelectSchema();
+        })
+    );
+
+    ctx.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(() => {
+            ext = null;
+        })
+    );
 }
 
 
