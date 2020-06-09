@@ -41,7 +41,7 @@ function matchSelectedItemToSchema(schemas: Schema[], items: QuickPickItem[], se
 }
 
 function detectJSONorYAML(scheme: Schema): string | undefined {
-    if (vscode.window.activeTextEditor!.document.languageId === "json") {
+    if (vscode.window.activeTextEditor!.document.languageId === "json" || vscode.window.activeTextEditor!.document.languageId === "jsonc") {
         return "json";
     }
     if (vscode.window.activeTextEditor!.document.languageId === "yaml") {
@@ -49,25 +49,25 @@ function detectJSONorYAML(scheme: Schema): string | undefined {
     }
     const fileName = vscode.window.activeTextEditor!.document.fileName.toLowerCase();
     if (fileName) {
-        if (fileName.endsWith("yaml") || fileName.endsWith("yml")) {
+        if (fileName.endsWith(".yaml") || fileName.endsWith(".yml")) {
             return "yaml";
         }
-        if (fileName.endsWith("json")) {
+        if (fileName.endsWith(".json") || fileName.endsWith(".jsonc")) {
             return "json";
         }
-        if (fileName.includes("yaml") || fileName.includes("yml")) {
+        if (fileName.includes(".yaml") || fileName.includes(".yml")) {
             return "yaml";
         }
-        if (fileName.includes("json")) {
+        if (fileName.includes(".json") || fileName.includes(".jsonc")) {
             return "json";
         }
     }
     if (scheme.catalog.fileMatch) {
         for (let match of scheme.catalog.fileMatch) {
-            if (match.includes("yaml") || match.includes("yml")) {
+            if (match.includes(".yaml") || match.includes(".yml")) {
                 return "yaml";
             }
-            if (match.includes("json")) {
+            if (match.includes(".json") || match.includes(".jsonc")) {
                 return "json";
             }
         }
