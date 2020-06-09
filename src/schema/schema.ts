@@ -87,6 +87,6 @@ export class SchemaStore {
     };
 
     addSchemas = (schema: Schema) => {
-        this.schemas.push(schema)
-    }
+        this.schemas.push(schema);
+    };
 }

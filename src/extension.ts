@@ -12,8 +12,8 @@ type YAMLSchemaSettings = { [label: string]: string[] };
 
 class UserMessageError implements Error {
 
-    message: string
-    name: string
+    message: string;
+    name: string;
 
     constructor(message: string) {
         this.message = message;
@@ -23,8 +23,8 @@ class UserMessageError implements Error {
 
 class InterruptionError implements Error {
 
-    message: string
-    name: string
+    message: string;
+    name: string;
 
     constructor(message: string) {
         this.message = message;
@@ -33,7 +33,7 @@ class InterruptionError implements Error {
 }
 
 class Extension {
-    schemaStore: SchemaStore
+    schemaStore: SchemaStore;
 
     constructor() {
         this.schemaStore = this.initSchemaStore();
@@ -47,12 +47,12 @@ class Extension {
                 url: "http://schemastore.org/api/json/catalog.json",
             }]
         });
-    }
+    };
 
     private addUserSchemas = () => {
         const userSchemas = vscode.workspace.getConfiguration("json-yaml-schema-selector").get("additionalSchemas") as (string | SchemaCatalog)[];
         userSchemas.forEach(schema => {
-            if (typeof (schema) == "string") {
+            if (typeof (schema) === "string") {
                 this.schemaStore.addSchemas({
                     catalog: {
                         name: schema,
@@ -60,29 +60,29 @@ class Extension {
                         url: schema,
                     },
                     org: "user-setting"
-                })
+                });
             } else {
                 if (!schema.description) {
-                    schema.description = schema.name
+                    schema.description = schema.name;
                 }
                 if (!schema.description) {
-                    schema.description = schema.name
+                    schema.description = schema.name;
                 }
                 this.schemaStore.addSchemas({
                     catalog: schema,
                     org: "user-setting"
-                })
+                });
             }
-        })
-    }
+        });
+    };
 
     private fetchSchemas = async () => {
         await this.schemaStore.fetchSchemas();
-    }
+    };
 
     private getActiveEditorDocumentPath = (): string => {
         return vscode.workspace.asRelativePath(vscode.window.activeTextEditor!.document.uri);
-    }
+    };
 
     private selectSchema = async (filePath: string): Promise<Schema> => {
 
@@ -134,7 +134,7 @@ class Extension {
             throw new InterruptionError("does not select schema");
         }
         return selectedSchema;
-    }
+    };
 
     private selectSchemaURL = async (schema: Schema): Promise<string> => {
 
@@ -160,7 +160,7 @@ class Extension {
             return schema.catalog.url as string;
         }
         return schema.catalog.versions[selected.label] as string;
-    }
+    };
 
     private detectJSONorYAML = async (scheme: Schema): Promise<string> => {
         if (vscode.window.activeTextEditor!.document.languageId === "json" || vscode.window.activeTextEditor!.document.languageId === "jsonc") {
@@ -197,10 +197,10 @@ class Extension {
 
         const selected = await vscode.window.showQuickPick(["json", "yaml"], { canPickMany: false });
         if (selected) {
-            return selected
+            return selected;
         }
-        throw new InterruptionError("does not select json/yaml")
-    }
+        throw new InterruptionError("does not select json/yaml");
+    };
 
     private insertJSONConfiguration = (filePath: string, schemaURL: string) => {
         let config = vscode.workspace.getConfiguration("json");
@@ -212,7 +212,7 @@ class Extension {
             settings = [update];
         }
         config.update("schemas", settings, false);
-    }
+    };
 
     private insertYAMLConfiguration = (filePath: string, schemaURL: string) => {
         let config = vscode.workspace.getConfiguration("yaml");
@@ -225,7 +225,7 @@ class Extension {
         }
         settings[schemaURL].push(filePath);
         config.update("schemas", settings, false);
-    }
+    };
 
     public runSelectSchema = async () => {
 
@@ -235,7 +235,7 @@ class Extension {
 
         try {
             await this.fetchSchemas();
-            const filePath = this.getActiveEditorDocumentPath()
+            const filePath = this.getActiveEditorDocumentPath();
             const schema = await this.selectSchema(filePath);
             const selectedSchemaURL = await this.selectSchemaURL(schema);
             const detectedType = await this.detectJSONorYAML(schema);
@@ -255,8 +255,7 @@ class Extension {
             throw err;
         }
 
-    }
-
+    };
 }
 
 export function activate(ctx: vscode.ExtensionContext) {
