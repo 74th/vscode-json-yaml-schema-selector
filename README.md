@@ -1,6 +1,16 @@
 # JSON & YAML Schema elector
 
+[VS Code Marketplace Page](https://marketplace.visualstudio.com/items?itemName=74th.json-yaml-schema-selector) [![](https://img.shields.io/visual-studio-marketplace/v/74th.json-yaml-schema-selector)](https://marketplace.visualstudio.com/items?itemName=74th.json-yaml-schema-selector)
+
 Setting a schemas to your JSON and YAML file quickly.
+
+# Install
+
+type F1 key and paste
+
+```
+ext install 74th.json-yaml-schema-selector
+```
 
 # How to use
 
